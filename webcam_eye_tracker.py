@@ -2,6 +2,21 @@ import cv2
 import json
 import requests
 
+def send_to_server(data):
+    server_url = "http://localhost:5000/endpoint"  
+    headers = {"Content-Type": "application/json"}
+    response = requests.post(server_url, data=json.dumps(data), headers=headers)
+
+    # 응답 확인
+    print(response.text)
+
+
+def save_to_local(data, filename="eyes_data.json"):
+    with open(filename, 'a') as file:
+        json.dump(data, file)
+        file.write("\n")  # 한 줄에 하나의 JSON 객체를 저장하기 위한 개행
+
+
 def detect_eyes_from_webcam():
     # Haar cascades 로드
     face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_frontalface_default.xml")
@@ -21,10 +36,10 @@ def detect_eyes_from_webcam():
 
             eyes = eye_cascade.detectMultiScale(roi_gray)
             for (ex, ey, ew, eh) in eyes:
-                eyes_data.append({"x": x + ex, "y": y + ey, "width": ew, "height": eh})
+                eyes_data.append({"x": int(x + ex), "y": int(y + ey), "width": int(ew), "height": int(eh)})
 
         # 서버에 데이터 전송
-        send_to_server(eyes_data)
+        save_to_local(eyes_data)
 
         # 결과 프레임 표시
         cv2.imshow('Frame', frame)
@@ -36,12 +51,8 @@ def detect_eyes_from_webcam():
     cap.release()
     cv2.destroyAllWindows()
 
-def send_to_server(data):
-    server_url = "http://localhost:5000/endpoint"  
-    headers = {"Content-Type": "application/json"}
-    response = requests.post(server_url, data=json.dumps(data), headers=headers)
+def test_function():
+	print("Testing fuction!")
 
-    # 응답 확인
-    print(response.text)
-
+test_function()
 detect_eyes_from_webcam()
